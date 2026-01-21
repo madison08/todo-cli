@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"slices"
+	"strconv"
+	"time"
 )
 
 const FILE_PATH string = "tasks.json"
@@ -52,7 +55,7 @@ func loadTasks() []Todo {
 func main() {
 
 	if len(os.Args) < 2 {
-		fmt.Println("Veuillez saisir au moins un argument")
+		log.Fatal("Veuillez saisir au moins un argument")
 	}
 
 	tasks := loadTasks()
@@ -62,14 +65,60 @@ func main() {
 	switch arg {
 	case "add":
 		fmt.Println("Ajout d'une tâche...")
+		now := time.Now()
+		unixTime := now.Unix()
 		if len(os.Args) > 2 {
-			tasks = append(tasks, Todo{ID: len(tasks) + 1, Title: os.Args[2], Done: false})
+			tasks = append(tasks, Todo{ID: int(unixTime), Title: os.Args[2], Done: false})
 			saveTasks(tasks)
 			fmt.Println(os.Args[2], "a été ajouter avec succès !")
 		}
+	case "done":
+		if len(os.Args) > 2 {
+			taskId, err := strconv.Atoi(os.Args[2])
+
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			for index, task := range tasks {
+				if task.ID == taskId {
+					tasks[index].Done = true
+					break
+				}
+			}
+			saveTasks(tasks)
+		}
+
+	case "delete":
+		if len(os.Args) > 2 {
+
+			taskId, err := strconv.Atoi(os.Args[2])
+
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			for _, task := range tasks {
+				if task.ID == taskId {
+					index := slices.Index(tasks, task)
+					if index != -1 {
+						tasks = slices.Delete(tasks, index, index+1)
+					}
+				}
+			}
+
+			saveTasks(tasks)
+		}
+
 	case "list":
+
 		for _, task := range tasks {
-			fmt.Println(task.Title)
+			if task.Done {
+				fmt.Printf("[X] - %v - %v \n", task.ID, task.Title)
+			} else {
+				fmt.Printf("[ ] - %v - %v \n", task.ID, task.Title)
+			}
+
 		}
 	case "help", "":
 		fmt.Println("Commandes disponibles :")
