@@ -8,6 +8,8 @@ import (
 	"slices"
 	"strconv"
 	"time"
+
+	"github.com/fatih/color"
 )
 
 const FILE_PATH string = "tasks.json"
@@ -57,6 +59,9 @@ func main() {
 	if len(os.Args) < 2 {
 		log.Fatal("Veuillez saisir au moins un argument")
 	}
+
+	greenText := color.New(color.FgGreen)
+	redText := color.New(color.FgRed)
 
 	tasks := loadTasks()
 
@@ -114,12 +119,21 @@ func main() {
 
 		for _, task := range tasks {
 			if task.Done {
-				fmt.Printf("[X] - %v - %v \n", task.ID, task.Title)
+				greenText.Printf("[X] - %v - %v \n", task.ID, task.Title)
+
 			} else {
-				fmt.Printf("[ ] - %v - %v \n", task.ID, task.Title)
+				redText.Printf("[ ] - %v - %v \n", task.ID, task.Title)
 			}
 
 		}
+	case "pending":
+		for _, task := range tasks {
+			if !task.Done {
+				redText.Printf("[ ] - %v - %v \n", task.ID, task.Title)
+
+			}
+		}
+
 	case "help", "":
 		fmt.Println("Commandes disponibles :")
 		fmt.Println("  add  <titre>  → Ajoute une tâche")
